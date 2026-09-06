@@ -1,0 +1,369 @@
+<title>Kalkulator Umur</title>
+<style>
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f2f2f2;
+    color: #333333;
+    margin: 0;
+    padding: 20px;
+  }
+  .container{
+    max-width: 420px;
+    margin: 40px auto;
+    background: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  h1{
+    text-align: center;
+    color: #222222;
+    font-size: 24px;
+    margin-top: 0;
+  }
+  h2{
+    color: #222222;
+    font-size: 18px;
+  }
+  p{ line-height: 1.5; }
+  label{ font-weight: bold; display: block; margin-bottom: 6px; }
+  input[type="date"], input[type="number"]{
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+  .btn{
+    background: #4CAF50;
+    color: #ffffff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover{ background: #45a049; }
+  .error{ color: #d8000c; font-size: 13px; min-height: 1em; }
+  progress{ width: 65%; vertical-align: middle; }
+  hr{ border: none; border-top: 1px solid #dddddd; margin: 20px 0; }
+  .timeline{ list-style: none; padding-left: 0; margin: 14px 0; }
+  .timeline li{ margin-bottom: 12px; }
+  .tl-row{ display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .tl-age{ font-weight: 700; color: #2e7d32; min-width: 22px; }
+  .tl-text{ flex: 1 1 200px; }
+  .tl-note{ display: block; margin-top: 2px; color: #777777; font-size: 13px; font-style: italic; }
+  .result-number{ font-size: 48px; font-weight: bold; text-align: center; margin: 10px 0 20px; }
+  .personal-line{ background: #f7f7f2; border-left: 3px solid #4CAF50; padding: 10px 12px; font-size: 14px; margin: 20px 0; }
+
+  .msg-headline{ font-size: 21px; line-height: 1.35; margin-bottom: 4px; }
+  .punchline{ font-style: italic; font-size: 19px; text-align: center; color: #2e7d32; margin: 32px 0; line-height: 1.4; }
+  .aside{ color: #555555; font-size: 15px; }
+  .peak{ font-size: 28px; text-align: center; margin: 36px 0 12px; line-height: 1.25; }
+  .closing{ font-style: italic; font-size: 20px; text-align: center; color: #2e7d32; margin: 20px 0 28px; }
+
+  .msg-line{
+    opacity: 0;
+    transform: translateY(8px);
+    animation: msgFadeUp .5s ease forwards;
+    animation-delay: calc(var(--d, 0) * .13s);
+  }
+  @keyframes msgFadeUp{ to{ opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce){
+    .msg-line{ opacity: 1; transform: none; animation: none; }
+  }
+</style>
+
+<div class="container">
+  <h1>Kalkulator Umur</h1>
+
+  <section id="stage-landing">
+    <p>Masukkan tahun lahir kamu, terus klik tombol di bawah.</p>
+    <form id="dob-form" novalidate>
+      <label for="dob-input">Tahun lahir:</label>
+      <input type="number" id="dob-input" name="birthyear" inputmode="numeric" min="1900" placeholder="cth. 1998" required>
+      <p class="error" id="dob-error" role="alert"></p>
+      <button type="submit" class="btn">Hitung Umur</button>
+    </form>
+  </section>
+
+  <hr id="hr-calculating" hidden>
+  <section id="stage-calculating" hidden>
+    <p id="calc-message">Lagi ngitung umur kamu&hellip;</p>
+    <progress id="calc-progress" max="100" value="0"></progress>
+    <span id="calc-pct" aria-live="polite">0%</span>
+  </section>
+
+  <hr id="hr-fake-result" hidden>
+  <section id="stage-fake-result" hidden>
+    <p class="result-number"><span id="fake-age-number">--</span> tahun</p>
+    <button type="button" class="btn" id="btn-challenge">Lanjut</button>
+  </section>
+
+  <hr id="hr-reveal" hidden>
+  <section id="stage-reveal" hidden>
+    <p>Oke, kami bohong dikit tadi.</p>
+    <p>Umur kamu tahun ini kurang lebih <strong id="real-age-number">--</strong> tahun.</p>
+    <p>Tapi gini masalahnya&hellip;</p>
+    <button type="button" class="btn" id="btn-to-message">Lanjut</button>
+  </section>
+
+  <hr id="hr-message" hidden>
+  <section id="stage-message" hidden>
+    <h2 class="msg-headline msg-line" style="--d:0">Entah sejak kapan, umur jadi berasa kayak deadline.</h2>
+
+    <ul class="timeline">
+      <li class="msg-line" style="--d:1" data-age="18"><div class="tl-row"><span class="tl-age">18</span><span class="tl-text">&mdash; Seharusnya udah tahu apa yang kamu mau.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:2" data-age="22"><div class="tl-row"><span class="tl-age">22</span><span class="tl-text">&mdash; Seharusnya udah lulus.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:3" data-age="25"><div class="tl-row"><span class="tl-age">25</span><span class="tl-text">&mdash; Seharusnya udah punya karier.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:4" data-age="27"><div class="tl-row"><span class="tl-age">27</span><span class="tl-text">&mdash; Seharusnya udah nikah.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:5" data-age="30"><div class="tl-row"><span class="tl-age">30</span><span class="tl-text">&mdash; Seharusnya udah punya rumah.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:6" data-age="32"><div class="tl-row"><span class="tl-age">32</span><span class="tl-text">&mdash; Seharusnya udah punya anak.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:7" data-age="35"><div class="tl-row"><span class="tl-age">35</span><span class="tl-text">&mdash; Seharusnya semua udah beres.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:8" data-age="40"><div class="tl-row"><span class="tl-age">40</span><span class="tl-text">&mdash; Seharusnya udah mapan secara finansial.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:9" data-age="45"><div class="tl-row"><span class="tl-age">45</span><span class="tl-text">&mdash; Seharusnya udah sukses.</span></div><span class="tl-note"></span></li>
+      <li class="msg-line" style="--d:10" data-age="50"><div class="tl-row"><span class="tl-age">50</span><span class="tl-text">&mdash; Seharusnya udah bisa pensiun santai.</span></div><span class="tl-note"></span></li>
+    </ul>
+
+    <p class="punchline msg-line" style="--d:12">Lagian, sejak kapan hidup punya jadwal resmi kayak gini?</p>
+
+    <p class="personal-line msg-line" id="personal-age-line" style="--d:14"></p>
+
+    <p class="aside msg-line" style="--d:15">Dan lucunya, kita sering merasa gagal hanya karena belum mencentang semuanya.</p>
+
+    <h2 class="peak msg-line" style="--d:17">Kamu nggak telat.</h2>
+    <p class="msg-line" style="--d:18">Kamu cuma menjalani hidup yang nggak bisa dimasukin ke spreadsheet.</p>
+    <p class="closing msg-line" style="--d:20">Hidupmu punya timeline sendiri.</p>
+
+    <button type="button" class="btn msg-line" style="--d:21" id="btn-to-final-question">Terus? <span aria-hidden="true">&rarr;</span></button>
+  </section>
+
+  <hr id="hr-final-question" hidden>
+  <section id="stage-final-question" hidden>
+    <h2>Jadi&hellip; sebenernya umur kamu berapa?</h2>
+    <p>Bukan kata KTP kamu.<br>Bukan kata temen-temen kamu.<br>Bukan kata LinkedIn.</p>
+    <p>Umur berapa yang beneran kamu rasain?</p>
+    <form id="feel-form">
+      <label for="feel-input">Gue ngerasa umur (tahun):</label>
+      <input type="number" id="feel-input" name="feel">
+      <p class="error" id="feel-error" role="alert"></p>
+      <button type="submit" class="btn">Hitungin, Dong!</button>
+    </form>
+  </section>
+
+  <hr id="hr-final-response" hidden>
+  <section id="stage-final-response" hidden>
+    <p id="feel-response"></p>
+    <p class="personal-line" id="age-gap-line"></p>
+    <h2>Angka yang barusan kamu ketik itu yang beneran valid.</h2>
+    <p>Bukan yang di KTP. Bukan yang di kalkulator ini juga.</p>
+    <p>Jaga diri kamu baik-baik, ya.</p>
+    <button type="button" class="btn" id="btn-restart">Hitung Ulang</button>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(sel){ return document.querySelector(sel); };
+  var downstream = ["calculating","fake-result","reveal","message","final-question","final-response"];
+
+  var state = { birthYear:null, realAge:null, fakeAge:null };
+
+  function show(id){
+    var section = document.getElementById("stage-" + id);
+    var hr = document.getElementById("hr-" + id);
+    if(hr) hr.hidden = false;
+    if(section){
+      section.hidden = false;
+      section.scrollIntoView();
+      var heading = section.querySelector("h2, .result-number");
+      if(heading){ heading.setAttribute("tabindex","-1"); heading.focus(); }
+    }
+  }
+
+  function hideAllDownstream(){
+    downstream.forEach(function(id){
+      var section = document.getElementById("stage-" + id);
+      var hr = document.getElementById("hr-" + id);
+      if(section) section.hidden = true;
+      if(hr) hr.hidden = true;
+    });
+  }
+
+  // ---- year validation & age math ----
+  function parseBirthYear(value){
+    if(!value) return { error: "Lengkapi dulu tahunnya." };
+    if(!/^\d{4}$/.test(value)) return { error: "Masukin tahun 4 digit ya, misalnya 1998." };
+    var y = parseInt(value, 10);
+    var currentYear = new Date().getFullYear();
+    if(y < 1900) return { error: "Pilih tahun setelah 1900, ya." };
+    if(y > currentYear) return { error: "Itu tahun di masa depan. Belum bisa kami hitung." };
+    return { year: y };
+  }
+
+  function calcRealAge(birthYear){
+    return new Date().getFullYear() - birthYear;
+  }
+
+  function randomFakeAge(excludeAge){
+    var age;
+    do { age = 15 + Math.floor(Math.random()*8); } while(age === excludeAge);
+    return age;
+  }
+
+  // ---- dob form ----
+  var dobForm = $("#dob-form");
+  var dobInput = $("#dob-input");
+  dobInput.max = new Date().getFullYear();
+
+  dobForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    var result = parseBirthYear(dobInput.value.trim());
+    var errorEl = $("#dob-error");
+    if(result.error){
+      errorEl.textContent = result.error;
+      return;
+    }
+    errorEl.textContent = "";
+    hideAllDownstream();
+    state.birthYear = result.year;
+    state.realAge = calcRealAge(result.year);
+    state.fakeAge = randomFakeAge(state.realAge);
+    show("calculating");
+    runLoadingSequence(function(){
+      document.getElementById("stage-calculating").hidden = true;
+      document.getElementById("hr-calculating").hidden = true;
+      renderFakeResult();
+      show("fake-result");
+    });
+  });
+
+  // ---- loading sequence ----
+  function runLoadingSequence(callback){
+    var msgs = [
+      "Lagi ngitung umur kamu…",
+      "Ngecek tanggal lahir kamu…",
+      "Nyocokin sama tanggal hari ini…",
+      "Konsultasi dulu sama hukum waktu…",
+      "Mikir ulang soal pilihan hidup…",
+      "Bentar lagi…"
+    ];
+    var total = 2600;
+    var msgEl = $("#calc-message"), pctEl = $("#calc-pct"), progressEl = $("#calc-progress");
+    var start = performance.now();
+    var msgIndex = 0;
+    var glitched = false;
+    msgEl.textContent = msgs[0];
+
+    function frame(now){
+      var elapsed = now - start;
+      var progress = Math.min(elapsed/total, 1);
+      var pct = Math.floor(progress*99);
+      if(!glitched && progress > 0.5 && progress < 0.7){
+        glitched = true;
+        pct = Math.max(pct - 4, 0);
+      }
+      pctEl.textContent = pct + "%";
+      progressEl.value = pct;
+      var newIndex = Math.min(Math.floor(progress*msgs.length), msgs.length-1);
+      if(newIndex !== msgIndex){
+        msgIndex = newIndex;
+        msgEl.textContent = msgs[msgIndex];
+      }
+      if(elapsed < total){
+        requestAnimationFrame(frame);
+      } else {
+        pctEl.textContent = "99%";
+        progressEl.value = 99;
+        msgEl.textContent = msgs[msgs.length-1];
+        setTimeout(callback, 400);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- fake result ----
+  function renderFakeResult(){
+    $("#fake-age-number").textContent = state.fakeAge;
+  }
+
+  $("#btn-challenge").addEventListener("click", function(){
+    $("#real-age-number").textContent = state.realAge;
+    show("reveal");
+  });
+
+  function personalizeTimeline(){
+    document.querySelectorAll(".timeline li").forEach(function(li){
+      var age = parseInt(li.getAttribute("data-age"), 10);
+      var note = li.querySelector(".tl-note");
+      if(!note) return;
+      if(state.realAge > age) note.textContent = "(udah kamu lewatin)";
+      else if(state.realAge === age) note.textContent = "(ini umur kamu sekarang)";
+      else note.textContent = "(masih di depan)";
+    });
+    $("#personal-age-line").textContent = "Ngomong-ngomong, kamu kurang lebih " + state.realAge + " tahun sekarang.";
+  }
+
+  $("#btn-to-message").addEventListener("click", function(){
+    personalizeTimeline();
+    show("message");
+  });
+
+  $("#btn-to-final-question").addEventListener("click", function(){
+    show("final-question");
+  });
+
+  // ---- feel age ----
+  function feelResponse(n){
+    if(n <= 13) return "Menarik. Kamu milih kekacauan.";
+    if(n <= 18) return "Wajar sih. Badan kamu mungkin protes, tapi otak kamu udah resmi ngajuin permohonan.";
+    if(n <= 25) return "Masuk akal. Kamu lagi ada di antara “gue punya rencana” sama “liat aja nanti”.";
+    if(n <= 35) return "Klasik banget. Udah cukup dewasa buat tahu yang lebih baik, tapi masih cukup muda buat tetep bikin keputusan yang dipertanyakan.";
+    if(n <= 50) return "Umur yang terhormat. Tapi lutut kamu mungkin punya pendapat sendiri.";
+    if(n <= 100) return "Keren. Pengalaman kamu udah cukup banyak buat tahu kalau sebenernya nggak ada orang yang beneran tahu apa yang mereka lakuin.";
+    return "Berani juga klaimnya.";
+  }
+
+  $("#feel-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var raw = $("#feel-input").value.trim();
+    var errorEl = $("#feel-error");
+    if(raw === "" || !/^-?\d+$/.test(raw)){
+      errorEl.textContent = "Masukin angka, ya. Angka apa aja boleh.";
+      return;
+    }
+    errorEl.textContent = "";
+    var n = parseInt(raw, 10);
+    $("#feel-response").textContent = feelResponse(n);
+
+    var diff = n - state.realAge;
+    var gapText;
+    if(diff === 0){
+      gapText = "Umur kamu tahun ini kurang lebih pas " + state.realAge + " tahun, sama kayak yang kamu rasain.";
+    } else if(diff > 0){
+      gapText = "Umur kamu tahun ini kurang lebih " + state.realAge + " tahun — berarti kamu ngerasa " + diff + " tahun lebih tua dari itu.";
+    } else {
+      gapText = "Umur kamu tahun ini kurang lebih " + state.realAge + " tahun — berarti kamu ngerasa " + Math.abs(diff) + " tahun lebih muda dari itu.";
+    }
+    $("#age-gap-line").textContent = gapText;
+
+    show("final-response");
+  });
+
+  $("#btn-restart").addEventListener("click", function(){
+    hideAllDownstream();
+    dobForm.reset();
+    $("#dob-error").textContent = "";
+    $("#feel-form").reset();
+    $("#feel-error").textContent = "";
+    state = { birthYear:null, realAge:null, fakeAge:null };
+    window.scrollTo(0, 0);
+  });
+})();
+</script>
