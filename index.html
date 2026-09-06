@@ -1,25 +1,32 @@
 <title>Kalkulator Umur</title>
 <style>
+  *{ box-sizing: border-box; }
+  html{ -webkit-text-size-adjust: 100%; }
   body{
     font-family: Arial, Helvetica, sans-serif;
     background: #f2f2f2;
     color: #333333;
     margin: 0;
-    padding: 20px;
+    padding: 12px;
   }
   .container{
     max-width: 420px;
-    margin: 40px auto;
+    margin: 16px auto;
     background: #ffffff;
     border: 1px solid #cccccc;
     border-radius: 8px;
-    padding: 20px;
+    padding: 16px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    overflow-wrap: break-word;
+  }
+  @media (min-width: 480px){
+    body{ padding: 20px; }
+    .container{ margin: 40px auto; padding: 20px; }
   }
   h1{
     text-align: center;
     color: #222222;
-    font-size: 24px;
+    font-size: clamp(20px, 6vw, 24px);
     margin-top: 0;
   }
   h2{
@@ -30,27 +37,33 @@
   label{ font-weight: bold; display: block; margin-bottom: 6px; }
   input[type="date"], input[type="number"]{
     width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
     border: 1px solid #cccccc;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px;
     box-sizing: border-box;
     font-family: inherit;
   }
   .btn{
+    display: block;
+    width: 100%;
     background: #4CAF50;
     color: #ffffff;
     border: none;
-    padding: 10px 16px;
+    padding: 14px 16px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px;
+    text-align: center;
     cursor: pointer;
     font-family: inherit;
+    margin-top: 4px;
   }
   .btn:hover{ background: #45a049; }
+  .btn:active{ background: #3d8b40; }
   .error{ color: #d8000c; font-size: 13px; min-height: 1em; }
-  progress{ width: 65%; vertical-align: middle; }
+  .calc-row{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  progress{ flex: 1 1 120px; min-width: 80px; height: 10px; vertical-align: middle; }
   hr{ border: none; border-top: 1px solid #dddddd; margin: 20px 0; }
   .timeline{ list-style: none; padding-left: 0; margin: 14px 0; }
   .timeline li{ margin-bottom: 12px; }
@@ -58,14 +71,14 @@
   .tl-age{ font-weight: 700; color: #2e7d32; min-width: 22px; }
   .tl-text{ flex: 1 1 200px; }
   .tl-note{ display: block; margin-top: 2px; color: #777777; font-size: 13px; font-style: italic; }
-  .result-number{ font-size: 48px; font-weight: bold; text-align: center; margin: 10px 0 20px; }
-  .personal-line{ background: #f7f7f2; border-left: 3px solid #4CAF50; padding: 10px 12px; font-size: 14px; margin: 20px 0; }
+  .result-number{ font-size: clamp(2.2rem, 14vw, 3rem); font-weight: bold; text-align: center; margin: 10px 0 20px; }
+  .personal-line{ background: #f7f7f2; border-left: 3px solid #4CAF50; padding: 10px 12px; font-size: 16px; margin: 20px 0; }
 
-  .msg-headline{ font-size: 21px; line-height: 1.35; margin-bottom: 4px; }
-  .punchline{ font-style: italic; font-size: 19px; text-align: center; color: #2e7d32; margin: 32px 0; line-height: 1.4; }
-  .aside{ color: #555555; font-size: 15px; }
-  .peak{ font-size: 28px; text-align: center; margin: 36px 0 12px; line-height: 1.25; }
-  .closing{ font-style: italic; font-size: 20px; text-align: center; color: #2e7d32; margin: 20px 0 28px; }
+  .msg-headline{ font-size: clamp(19px, 5.5vw, 21px); line-height: 1.35; margin-bottom: 4px; }
+  .punchline{ font-style: italic; font-size: 18px; text-align: center; color: #2e7d32; margin: 32px 0; line-height: 1.4; }
+  .aside{ color: #555555; font-size: 16px; }
+  .peak{ font-size: clamp(1.5rem, 8vw, 1.75rem); text-align: center; margin: 36px 0 12px; line-height: 1.25; }
+  .closing{ font-style: italic; font-size: 19px; text-align: center; color: #2e7d32; margin: 20px 0 28px; }
 
   .msg-line{
     opacity: 0;
@@ -95,8 +108,10 @@
   <hr id="hr-calculating" hidden>
   <section id="stage-calculating" hidden>
     <p id="calc-message">Lagi ngitung umur kamu&hellip;</p>
-    <progress id="calc-progress" max="100" value="0"></progress>
-    <span id="calc-pct" aria-live="polite">0%</span>
+    <div class="calc-row">
+      <progress id="calc-progress" max="100" value="0"></progress>
+      <span id="calc-pct" aria-live="polite">0%</span>
+    </div>
   </section>
 
   <hr id="hr-fake-result" hidden>
